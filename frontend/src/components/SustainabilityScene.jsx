@@ -1,15 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Sphere, GradientTexture } from '@react-three/drei';
+import { Float, MeshDistortMaterial, Sphere } from '@react-three/drei';
 
 function AnimatedSphere() {
     const meshRef = useRef();
 
     useFrame((state) => {
         const time = state.clock.getElapsedTime();
-        meshRef.current.rotation.x = Math.cos(time / 4) / 4;
-        meshRef.current.rotation.y = Math.sin(time / 4) / 4;
-        meshRef.current.rotation.z = Math.sin(time / 4) / 4;
+        if (meshRef.current) {
+            meshRef.current.rotation.x = time / 4;
+            meshRef.current.rotation.y = time / 4;
+        }
     });
 
     return (
@@ -20,12 +21,9 @@ function AnimatedSphere() {
                     speed={3}
                     distort={0.4}
                     radius={1}
-                >
-                    <GradientTexture
-                        stops={[0, 1]}
-                        colors={['#10b981', '#3b82f6']}
-                    />
-                </MeshDistortMaterial>
+                    emissive="#065f46"
+                    emissiveIntensity={0.5}
+                />
             </Sphere>
         </Float>
     );
@@ -33,12 +31,21 @@ function AnimatedSphere() {
 
 export default function SustainabilityScene() {
     return (
-        <div style={{ height: '300px', width: '100%', marginBottom: '2rem' }}>
-            <Canvas camera={{ position: [0, 0, 4], fov: 40 }}>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} />
-                <AnimatedSphere />
-            </Canvas>
+        <div style={{ height: '300px', width: '300px', pointerEvents: 'none', background: 'transparent' }}>
+            <Suspense fallback={<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', opacity: 0.5 }}>[3D SYSTEM INITIALIZING]</div>}>
+                <Canvas
+                    camera={{ position: [0, 0, 4], fov: 40 }}
+                    gl={{ alpha: true, antialias: true }}
+                    onCreated={({ gl }) => {
+                        console.log("3D Canvas initialized");
+                    }}
+                    onError={(e) => console.error("3D Render Error:", e)}
+                >
+                    <ambientLight intensity={1} />
+                    <pointLight position={[10, 10, 10]} intensity={2} />
+                    <AnimatedSphere />
+                </Canvas>
+            </Suspense>
         </div>
     );
 }

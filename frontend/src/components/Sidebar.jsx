@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, Upload, List, BarChart3, Info, Lightbulb, Hexagon } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
     const menuItems = [
@@ -14,11 +15,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
     return (
         <div className="sidebar">
-            <div className="logo-container">
-                <div className="status-badge status-high" style={{ padding: '0.5rem' }}>
-                    <Hexagon size={24} fill="currentColor" strokeWidth={1} />
-                </div>
-                <h1 className="logo-text">EcoLedger</h1>
+            <div className="logo-container" style={{ padding: '1.5rem', marginBottom: '1rem' }}>
+                <img src={logo} alt="EcoLedger Logo" style={{ height: '50px', width: 'auto' }} />
+                <h1 className="logo-text" style={{ fontSize: '1.2rem', marginLeft: '0.75rem' }}>EcoLedger</h1>
             </div>
 
             <nav style={{ flex: 1 }}>

@@ -81,13 +81,14 @@ const Scenario = () => {
                             {result.simulated_co2e.toFixed(2)}
                         </h2>
                         <div style={{
-                            backgroundColor: '#e8f5e9',
-                            color: '#2e7d32',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            color: 'var(--primary)',
                             display: 'inline-block',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
+                            padding: '0.4rem 0.8rem',
+                            borderRadius: '8px',
                             fontSize: '0.85rem',
-                            fontWeight: 600
+                            fontWeight: 700,
+                            border: '1px solid rgba(16, 185, 129, 0.2)'
                         }}>
                             -{result.reduction_percentage.toFixed(1)}% Reduction
                         </div>

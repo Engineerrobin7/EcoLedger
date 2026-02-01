@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Database, Scale } from 'lucide-react';
+import { BookOpen, ShieldCheck, Database, Scale, AlertCircle } from 'lucide-react';
 
 const Methodology = () => {
     const sections = [
@@ -44,9 +44,12 @@ const Methodology = () => {
                 ))}
             </div>
 
-            <div className="card" style={{ marginTop: '2rem', backgroundColor: '#fafafa', borderStyle: 'dashed' }}>
-                <h3>Limitation Guidance</h3>
-                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <div className="card" style={{ marginTop: '2rem', borderStyle: 'dashed', borderDasharray: '4 4' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <AlertCircle size={20} color="var(--warning)" />
+                    Limitation Guidance
+                </h3>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem', lineHeight: 1.6 }}>
                     While EcoLedger aims for absolute accuracy, estimations in Scope 3 Supply Chain categories rely on industry averages.
                     Users are encouraged to replace spend-based data with supplier-specific product carbon footprints (PCFs) as they become available.
                 </p>

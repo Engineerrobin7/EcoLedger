@@ -20,10 +20,11 @@ const Insights = () => {
                 {recommendations.map((rec, i) => (
                     <div key={i} className="card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
                         <div style={{
-                            backgroundColor: rec.impact === 'High' ? '#e8f5e9' : '#fff3e0',
+                            backgroundColor: rec.impact === 'High' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
                             padding: '1rem',
                             borderRadius: 'var(--radius)',
-                            color: rec.impact === 'High' ? 'var(--primary)' : '#ef6c00'
+                            color: rec.impact === 'High' ? 'var(--primary)' : 'var(--warning)',
+                            border: `1px solid ${rec.impact === 'High' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`
                         }}>
                             <Lightbulb size={24} />
                         </div>
@@ -33,29 +34,28 @@ const Insights = () => {
                                 <h3 style={{ marginBottom: '0.5rem' }}>{rec.title}</h3>
                                 <span className={`status-badge status-${rec.impact.toLowerCase()}`}>{rec.impact} Impact</span>
                             </div>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>{rec.suggestion}</p>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>{rec.suggestion}</p>
 
                             <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button style={{
-                                    background: 'none',
-                                    border: '1px solid var(--primary)',
-                                    color: 'var(--primary)',
-                                    padding: '0.5rem 1rem',
+                                <button className="btn-primary" style={{
+                                    padding: '0.6rem 1.2rem',
                                     fontSize: '0.85rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '0.5rem'
                                 }}>
-                                    View Business Case <ArrowUpRight size={14} />
+                                    Strategy Brief <ArrowUpRight size={14} />
                                 </button>
                                 <button style={{
-                                    background: 'none',
-                                    border: '1px solid #ddd',
-                                    color: '#666',
-                                    padding: '0.5rem 1rem',
-                                    fontSize: '0.85rem'
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text-muted)',
+                                    padding: '0.6rem 1.2rem',
+                                    borderRadius: '12px',
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer'
                                 }}>
-                                    Mark as Planned
+                                    Acknowledge
                                 </button>
                             </div>
                         </div>
@@ -63,26 +63,29 @@ const Insights = () => {
                 ))}
             </div>
 
-            <div className="card" style={{ marginTop: '2rem', backgroundColor: 'var(--primary-dark)', color: 'white' }}>
-                <h3>Quarterly Decarbonization Roadmap</h3>
-                <p style={{ opacity: 0.8, marginTop: '0.5rem', marginBottom: '1.5rem' }}>Your path to Net Zero based on 2024 projections.</p>
+            <div className="card" style={{ marginTop: '3rem', borderLeft: '4px solid var(--primary)', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)' }}>
+                <h3>Decarbonization Roadmap</h3>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '2rem' }}>Priority sequence based on 2024 operational forecasts.</p>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    {['Q1: Baseline', 'Q2: Energy Opt', 'Q3: Supply Chain', 'Q4: Review'].map((step, i) => (
-                        <div key={i} style={{ textAlign: 'center', position: 'relative', flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: '16px', left: '0', right: '0', height: '2px', background: 'var(--border)', zIndex: 0 }}></div>
+                    {['Q1: Baseline', 'Q2: Optimization', 'Q3: Procurement', 'Q4: Verification'].map((step, i) => (
+                        <div key={i} style={{ textAlign: 'center', position: 'relative', flex: 1, zIndex: 1 }}>
                             <div style={{
                                 width: '32px',
                                 height: '32px',
                                 borderRadius: '50%',
-                                backgroundColor: i === 0 ? 'var(--success)' : 'rgba(255,255,255,0.2)',
-                                margin: '0 auto 0.5rem',
+                                backgroundColor: i === 0 ? 'var(--primary)' : 'var(--bg-dark)',
+                                border: '2px solid var(--border)',
+                                margin: '0 auto 0.75rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                color: i === 0 ? 'white' : 'var(--text-muted)'
                             }}>
                                 {i === 0 ? <CheckCircle size={16} /> : i + 1}
                             </div>
-                            <span style={{ fontSize: '0.8rem' }}>{step}</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: i === 0 ? '#fff' : 'var(--text-muted)' }}>{step}</span>
                         </div>
                     ))}
                 </div>
