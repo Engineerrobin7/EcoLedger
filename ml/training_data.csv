@@ -1,0 +1,61 @@
+description,label
+Fuel for company delivery trucks,Transport
+Diesel consumption for logistic fleet,Transport
+International shipment of goods via sea,Transport
+Commuter mileage reimbursement for employees,Transport
+Petrol used in company vehicles,Transport
+Truck transport for raw materials,Transport
+Freight shipping across border,Transport
+Aviation fuel for corporate jet,Transport
+Regional logistics truck fuel,Transport
+Last mile delivery fuel costs,Transport
+Electricity consumption for headquarters office,Energy
+Natural gas for warehouse heating,Energy
+Monthly power bill for assembly plant,Energy
+Grid electricity for data center lighting,Energy
+Solar panel maintenance and backup grid power,Energy
+HVAC energy consumption for retail branch,Energy
+District heating for downtown facility,Energy
+Electricity for electric vehicle fleet charging,Energy
+Monthly gas utility bill for production unit,Energy
+Power consumption for street lighting at facility,Energy
+AWS S3 storage monthly cost,Cloud Services
+Azure Virtual Machine instances for compute,Cloud Services
+Google Cloud Platform API usage fees,Cloud Services
+Hosting costs for corporate website on Heroku,Cloud Services
+Data center colocation fees for server racks,Cloud Services
+Cloud database hosting services,Cloud Services
+Web server infrastructure on DigitalOcean,Cloud Services
+CDN services for global content delivery,Cloud Services
+Cloud-native microservices infrastructure,Cloud Services
+Subscription for managed Kubernetes service,Cloud Services
+Procurement of new office furniture and desks,Procurement
+Hardware supplies for IT department laptops,Procurement
+Marketing materials and printed brochures,Procurement
+Professional consulting service fees,Procurement
+Office stationary and paper supplies,Procurement
+Catering services for annual corporate event,Procurement
+Janitorial and maintenance supplies,Procurement
+Software licenses for accounting department,Procurement
+Raw materials for furniture manufacturing,Procurement
+Packaging materials for finished products,Procurement
+Large shipment of steel for construction project,Transport
+Electricity for cold storage warehouse,Energy
+AWS Lambda execution costs,Cloud Services
+Purchase of 50 new ergonomic chairs,Procurement
+Shipping of prototype to international partner,Transport
+Natural gas utility service for January,Energy
+Azure Blob storage storage fees,Cloud Services
+Marketing agency retainer for Q1,Procurement
+Fleet vehicle maintenance and oil,Transport
+Electricity consumption for shared workspace,Energy
+Cloud Identity and Access Management service,Cloud Services
+Recycled paper for office printers,Procurement
+Heavy duty truck rental for logistics,Transport
+Industrial power usage for manufacturing floor,Energy
+Compute Engine instances for ML training,Cloud Services
+Laptops for new employee onboarding,Procurement
+Railway freight for heavy equipment,Transport
+Propane gas for forklift operation,Energy
+SaaS subscription for ERP system,Cloud Services
+Building renovation materials procurement,Procurement
