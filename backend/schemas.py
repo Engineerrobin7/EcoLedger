@@ -18,7 +18,7 @@ class ActivityResponse(ActivityBase):
     confidence_score: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class EmissionDetailResponse(BaseModel):
     emission_factor: float
@@ -28,7 +28,7 @@ class EmissionDetailResponse(BaseModel):
     unit_applied: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class FullActivityDetail(ActivityResponse):
     details: Optional[EmissionDetailResponse]

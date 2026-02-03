@@ -28,6 +28,9 @@ export default function Globe({ className }) {
             baseColor: [0.3, 0.3, 0.3],
             markerColor: [0.1, 0.8, 0.5], // Primary green
             glowColor: [0.1, 0.8, 0.5],
+            context: {
+                preserveDrawingBuffer: true
+            },
             markers: [
                 { location: [37.7595, -122.4367], size: 0.03 },
                 { location: [40.7128, -74.0060], size: 0.1 },

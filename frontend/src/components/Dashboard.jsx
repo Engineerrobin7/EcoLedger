@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import {
     TrendingUp, TrendingDown, Target, Zap,
-    Leaf, ArrowUpRight, Activity, Calendar
+    Leaf, ArrowUpRight, Activity, Calendar, BarChart
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../assets/logo.png';
@@ -51,22 +51,80 @@ const Dashboard = () => {
     const handleGenerateReport = async () => {
         setGeneratingReport(true);
         try {
+            // 1. Capture Dashboard Snapshot
             const element = document.getElementById('dashboard-content');
+            // Hide the generate button temporarily for the screenshot
+            const btn = document.getElementById('generate-btn');
+            if (btn) btn.style.display = 'none';
+
             const canvas = await html2canvas(element, {
                 scale: 2,
-                backgroundColor: '#0f172a', // Capture dark theme background
-                useCORS: true
+                backgroundColor: '#0B1120', // Match deep dark theme
+                useCORS: true,
+                logging: false,
+                windowWidth: 1400 // Force wide capture
             });
+
+            if (btn) btn.style.display = 'flex'; // Restore button
 
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`EcoLedger_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+            // --- PAGE 1: PROFESSIONAL COVER SHEET ---
+            // Dark Background for Cover
+            pdf.setFillColor(11, 17, 32); // #0B1120
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-            alert("Report generated successfully!");
+            // Logo & Branding
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(28);
+            pdf.setTextColor(45, 212, 191); // Teal Accent
+            pdf.text("ECOLEDGER OS", 20, 40);
+
+            pdf.setFontSize(12);
+            pdf.setTextColor(148, 163, 184); // Muted text
+            pdf.text("ENTERPRISE SUSTAINABILITY REPORT", 20, 50);
+
+            // Report Title
+            pdf.setFontSize(36);
+            pdf.setTextColor(255, 255, 255);
+            pdf.text("Carbon Impact", 20, 100);
+            pdf.text("Assessment", 20, 115);
+
+            // Date & ID
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            pdf.setFontSize(14);
+            pdf.setTextColor(45, 212, 191);
+            pdf.text(`Generated: ${date}`, 20, 140);
+            pdf.text(`Report ID: EL-${Date.now().toString().slice(-6)}`, 20, 150);
+
+            // Footer
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text("Confidential & Proprietary - Powered by EcoLedger AI", 20, pageHeight - 20);
+
+            // --- PAGE 2: DASHBOARD VISUALS ---
+            pdf.addPage();
+            // Dark Background for Content Page
+            pdf.setFillColor(11, 17, 32);
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+            // Header
+            pdf.setFontSize(16);
+            pdf.setTextColor(255, 255, 255);
+            pdf.text("Executive Dashboard Overview", 20, 20);
+
+            // Dashboard Image
+            const imgWidth = pageWidth - 20; // 10mm margin each side
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 10, 30, imgWidth, imgHeight);
+
+            // Save
+            pdf.save(`EcoLedger_Executive_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+
         } catch (error) {
             console.error("PDF Generation Error:", error);
             alert("Failed to generate report.");
@@ -86,9 +144,15 @@ const Dashboard = () => {
                 // Simulating a more "organic" loading time for feel
                 await new Promise(r => setTimeout(r, 800));
                 const res = await axios.get('/api/summary');
+
+                // If DB is empty, force fallback to Demo Data for "Wow" factor
+                if (!res.data || (res.data.total_co2e === 0 && res.data.trend_data.length === 0)) {
+                    throw new Error("Empty Data");
+                }
+
                 setData(res.data);
             } catch (err) {
-                console.warn("Using fallback data.");
+                console.log("Loading Demo Data (Backend empty or offline).");
                 setData({
                     total_co2e: 124.5,
                     category_distribution: [
@@ -146,280 +210,239 @@ const Dashboard = () => {
 
     return (
         <div id="dashboard-content" className="dashboard-content" style={{ paddingBottom: '3rem' }}>
-            {/* Header Section */}
-            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', color: 'var(--primary)' }}
-                    >
-                        <img src={logo} alt="EcoLedger Logo" style={{ height: '24px', width: 'auto' }} />
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.05em' }}>ECOLEDGER OS</span>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}
-                    >
-                        {greeting}.
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '1.1rem' }}
-                    >
-                        Here's your environmental impact overview for <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{dateStr}</span>.
-                    </motion.p>
+            {/* Top Bar (New feature) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ position: 'relative', width: '300px' }}>
+                    <input
+                        type="text"
+                        placeholder="Search reports, teams..."
+                        style={{
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '8px',
+                            padding: '0.6rem 1rem 0.6rem 2.5rem',
+                            color: 'var(--text-main)',
+                            width: '100%',
+                            fontSize: '0.9rem'
+                        }}
+                    />
+                    <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
                 </div>
 
-                {/* Visual Wow Factor: The Globe */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>
+                        <div style={{ cursor: 'pointer' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></div>
+                        <div style={{ cursor: 'pointer' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+                    </div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #2DD4BF 0%, #3B82F6 100%)', border: '2px solid #fff' }}></div>
+                </div>
+            </div>
+
+            {/* Page Header */}
+            <div style={{ marginBottom: '2rem', position: 'relative' }}>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: 600 }}>Carbon Overview</h1>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>A clear snapshot of your organization's carbon impact.</p>
+
+                {/* Visual Wow Factor: The Globe (Integrated) */}
                 <div style={{
                     position: 'absolute',
-                    top: '-60px',
-                    right: '250px',
-                    width: '300px',
-                    height: '300px',
+                    top: '-120px',
+                    right: '-20px',
+                    width: '500px',
+                    height: '500px',
                     zIndex: 0,
-                    pointerEvents: 'none'
+                    opacity: 1,
+                    pointerEvents: 'auto', // Enable interaction
+                    filter: 'drop-shadow(0 0 50px rgba(45, 212, 191, 0.2))'
                 }}>
-                    <div style={{ pointerEvents: 'auto' }}>
+                    <div style={{ width: '100%', height: '100%', transform: 'scale(1.2)' }}>
                         <Globe />
                     </div>
                 </div>
+            </div>
 
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleGenerateReport}
-                    disabled={generatingReport}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        backgroundColor: 'var(--primary)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
-                        cursor: generatingReport ? 'not-allowed' : 'pointer',
-                        opacity: generatingReport ? 0.7 : 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                    }}
-                >
-                    {generatingReport ? (
-                        <>
-                            Generate Report <span className="loader-ring" style={{ width: 12, height: 12, border: '2px solid #fff', borderTopColor: 'transparent' }}></span>
-                        </>
-                    ) : (
-                        'Generate Report'
-                    )}
-                </motion.button>
-            </header >
-
-            {/* Main Content Grid */}
-            < div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
-
-                {/* Hero Chart Section */}
-                < motion.div
-                    className="card hero-chart"
-                    style={{ gridColumn: 'span 8', padding: '2rem', display: 'flex', flexDirection: 'column' }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <div>
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>Emission Trends</h3>
-                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Weekly carbon footprint analysis</p>
+            {/* KPI Row (New 3-Column Layout) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+                {/* Total Emissions */}
+                <motion.div className="card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+                            <BarChart size={24} color="var(--primary)" />
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                Live Data
-                            </span>
-                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Emissions</span>
                     </div>
-                    <div style={{ flex: 1, minHeight: '300px' }}>
+                    <div style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                        {safeTotal.toFixed(1)} <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)', fontWeight: 400 }}>tCO2e</span>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Across all tracked sources</div>
+                </motion.div>
+
+                {/* Monthly Change */}
+                <motion.div className="card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+                            <Activity size={24} color="#F472B6" />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Monthly Change</span>
+                    </div>
+                    <div style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: '0.5rem', color: '#F472B6' }}>
+                        -12%
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Compared to last month</div>
+                </motion.div>
+
+                {/* Reduction Progress */}
+                <motion.div className="card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+                            <Leaf size={24} color="var(--secondary)" />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Reduction Goal</span>
+                    </div>
+                    <div style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--secondary)' }}>
+                        38%
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Toward your annual goal</div>
+                </motion.div>
+            </div>
+
+            {/* Main Content Grid (Charts) */}
+            <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+
+                {/* Emission Breakdown (Area Chart) */}
+                <div className="card" style={{ gridColumn: 'span 8', padding: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                        <h3>Emission Breakdown</h3>
+                        <select style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                            <option>This Year</option>
+                        </select>
+                    </div>
+                    <div style={{ height: '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={safeTrends}>
                                 <defs>
                                     <linearGradient id="gradientColor" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                <XAxis
-                                    dataKey="date"
-                                    stroke="#64748b"
-                                    fontSize={12}
-                                    fontFamily="Inter"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    dy={10}
-                                />
-                                <YAxis
-                                    stroke="#64748b"
-                                    fontSize={12}
-                                    fontFamily="Inter"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(value) => `${value}t`}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="co2e"
-                                    stroke="#10b981"
-                                    strokeWidth={3}
-                                    fill="url(#gradientColor)"
-                                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
-                                />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                                <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}t`} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 2 }} />
+                                <Area type="monotone" dataKey="co2e" stroke="var(--primary)" strokeWidth={3} fill="url(#gradientColor)" activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                </motion.div >
-
-                {/* Right Side Stats Column */}
-                < div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-                    {/* Primary KPI */}
-                    < motion.div
-                        className="card"
-                        style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.7) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)' }}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', color: 'var(--primary)' }}>
-                            <Activity size={20} />
-                            <span style={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: '0.05em' }}>CURRENT FOOTPRINT</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>tCO2e Total</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>
+                            <TrendingDown size={14} />
+                            <span>12% vs last month</span>
                         </div>
-                        <div style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1, marginBottom: '0.5rem' }}>
-                            {safeTotal.toFixed(1)}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>tCO2e Total</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#10b981', fontSize: '0.85rem', fontWeight: 600 }}>
-                                <TrendingDown size={14} />
-                                <span>12% vs last month</span>
-                            </div>
-                        </div>
-                    </motion.div >
-
-                    {/* Secondary KPIs Visualized */}
-                    < motion.div
-                        className="card"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>Efficiency Metrics</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            {[
-                                { label: 'Energy Intensity', val: 'Low', color: '#10b981' },
-                                { label: 'Data Confidence', val: '94%', color: '#3b82f6' },
-                                { label: 'Audit Status', val: 'Ready', color: '#f59e0b' }
-                            ].map((item, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.label}</span>
-                                    <span style={{ fontWeight: 600, color: item.color }}>{item.val}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div >
-                </div >
-
-                {/* Bottom Section: Hotspots & Breakdown */}
-                < motion.div
-                    className="card"
-                    style={{ gridColumn: 'span 6' }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h3>Priority Hotspots</h3>
-                        <ArrowUpRight size={18} color="var(--text-muted)" />
                     </div>
-                    <div className="hotspot-list">
-                        {(data?.hotspots || []).map((h, i) => (
-                            <div key={i} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '1rem 0',
-                                borderBottom: i !== (data?.hotspots.length - 1) ? '1px solid var(--border)' : 'none'
-                            }}>
-                                <div style={{
-                                    width: 40, height: 40,
-                                    borderRadius: '10px',
-                                    background: 'rgba(239, 68, 68, 0.1)',
-                                    color: '#ef4444',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginRight: '1rem'
-                                }}>
-                                    <Target size={20} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{h.description}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>High Impact Area</div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontWeight: 700 }}>{h.co2e.toFixed(1)}</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>tCO2e</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </motion.div >
+                </div>
 
-                <motion.div
-                    className="card"
-                    style={{ gridColumn: 'span 6' }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                >
-                    <h3 style={{ marginBottom: '1rem' }}>Resource Allocation</h3>
-                    <div style={{ display: 'flex', height: '240px' }}>
+                {/* By Source (Donut Chart) */}
+                <div className="card" style={{ gridColumn: 'span 4', padding: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                        <h3>By Source</h3>
+                        <div style={{ cursor: 'pointer' }}>...</div>
+                    </div>
+                    <div style={{ height: '250px', position: 'relative' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={data?.category_distribution || []}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
+                                    innerRadius={70}
+                                    outerRadius={90}
                                     paddingAngle={5}
                                     dataKey="value"
-                                    stroke="none"
                                 >
                                     {(data?.category_distribution || []).map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                                     ))}
                                 </Pie>
                                 <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.75rem' }}>
-                            {(data?.category_distribution || []).map((entry, index) => (
-                                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[index % COLORS.length] }}></div>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{entry.name}</span>
-                                    <span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 'auto' }}>{entry.value}%</span>
-                                </div>
-                            ))}
+                        {/* Center Text */}
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{safeTotal.toFixed(0)}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>tCO2e</div>
                         </div>
                     </div>
-                </motion.div>
-            </div >
-        </div >
+                    <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                        {(data?.category_distribution || []).map((entry, index) => (
+                            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[index % COLORS.length] }}></div>
+                                <span style={{ color: 'var(--text-muted)' }}>{entry.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Recent Activity (New Feature) */}
+            <div className="card" style={{ padding: '2rem' }}>
+                <h3 style={{ marginBottom: '1.5rem' }}>Recent Activity</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[
+                        { title: 'Cloud data synced', desc: 'AWS emissions updated', time: '02 hours ago', icon: 'cloud' },
+                        { title: 'Travel booking detected', desc: 'New flight added to Business Travel', time: '03 hours ago', icon: 'plane' },
+                        { title: 'Team member added', desc: 'Sarah Chan joined Engineering', time: '05 hours ago', icon: 'user' }
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                                    {/* Quick icon map */}
+                                    {item.icon === 'cloud' && <Activity size={18} />}
+                                    {item.icon === 'plane' && <ArrowUpRight size={18} />}
+                                    {item.icon === 'user' && <Leaf size={18} />}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 500 }}>{item.title}</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{item.desc}</div>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.time}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Floating Action Report Button */}
+            <motion.button
+                id="generate-btn"
+                onClick={handleGenerateReport}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                    position: 'fixed',
+                    bottom: '3rem',
+                    right: '3rem',
+                    padding: '1rem 2rem',
+                    backgroundColor: 'var(--primary)',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '50px',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    boxShadow: '0 10px 25px -5px rgba(45, 212, 191, 0.5)',
+                    cursor: 'pointer',
+                    zIndex: 100,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}
+            >
+                {generatingReport ? 'Generating...' : 'Generate New Report'}
+            </motion.button>
+        </div>
     );
 };
 

@@ -49,32 +49,23 @@ const Upload = ({ onUploadSuccess }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}
+                className="text-muted-p"
+                style={{ marginBottom: '3rem' }}
             >
                 Incorporate business activity data for automated carbon classification and methodology-aligned calculation.
             </motion.p>
 
             <motion.div
-                className="card"
-                style={{ maxWidth: '600px', margin: '0 auto' }}
+                className="card upload-container"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
             >
                 <form onSubmit={handleSubmit}>
                     <motion.div
+                        className="upload-drop-zone"
                         whileHover={{ borderColor: 'var(--primary)', backgroundColor: 'rgba(255,255,255,0.02)' }}
                         whileTap={{ scale: 0.99 }}
-                        style={{
-                            border: '2px dashed var(--border)',
-                            borderRadius: 'var(--radius)',
-                            padding: '4rem 2rem',
-                            textAlign: 'center',
-                            backgroundColor: 'rgba(255,255,255,0.01)',
-                            marginBottom: '2rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                        }}
                         onClick={() => document.getElementById('csv-input').click()}
                     >
                         <AnimatePresence mode="wait">
@@ -85,7 +76,7 @@ const Upload = ({ onUploadSuccess }) => {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                 >
-                                    <UploadIcon size={48} color="var(--primary)" style={{ marginBottom: '1.5rem', opacity: 0.8 }} />
+                                    <UploadIcon size={48} color="var(--primary)" className="upload-icon" />
                                     <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>Click to select or drag & drop CSV</p>
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
                                         Required: date, description, quantity, unit
@@ -136,17 +127,7 @@ const Upload = ({ onUploadSuccess }) => {
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            style={{
-                                marginTop: '1.5rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                color: '#10b981',
-                                background: 'rgba(16, 185, 129, 0.1)',
-                                padding: '1rem',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(16, 185, 129, 0.2)'
-                            }}
+                            className="upload-success-alert"
                         >
                             <CheckCircle2 size={20} />
                             <span>{message}</span>
@@ -157,17 +138,7 @@ const Upload = ({ onUploadSuccess }) => {
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            style={{
-                                marginTop: '1.5rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                color: '#ef4444',
-                                background: 'rgba(239, 68, 68, 0.1)',
-                                padding: '1rem',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(239, 68, 68, 0.2)'
-                            }}
+                            className="upload-error-alert"
                         >
                             <AlertCircle size={20} />
                             <span>{message}</span>
@@ -177,16 +148,16 @@ const Upload = ({ onUploadSuccess }) => {
             </motion.div>
 
             <motion.div
-                style={{ marginTop: '5rem' }}
+                className="upload-standards-section"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
             >
-                <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <h3 className="upload-standards-header">
                     <div style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--primary)' }}></div>
                     Ingestion Integrity Standards
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                <div className="standards-grid">
                     {[
                         { title: 'Validation', desc: 'Automated check of required reporting columns.' },
                         { title: 'Normalization', desc: 'Character encoding and unit-of-measure standardization.' },

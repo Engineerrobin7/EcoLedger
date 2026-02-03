@@ -1,60 +1,103 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Lightbulb, ArrowUpRight, CheckCircle } from 'lucide-react';
+import { Lightbulb, ArrowUpRight, CheckCircle, Sparkles, Cpu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Insights = () => {
     const [recommendations, setRecommendations] = useState([]);
+    const [aiAnalysis, setAiAnalysis] = useState(null);
+    const [loadingAi, setLoadingAi] = useState(false);
 
     useEffect(() => {
         axios.get('/api/insights').then(res => setRecommendations(res.data));
     }, []);
 
+    const handleGenerateAi = async () => {
+        setLoadingAi(true);
+        try {
+            // Simulate "thinking" time for realism
+            await new Promise(r => setTimeout(r, 1500));
+            const res = await axios.post('/api/insights/ai');
+            setAiAnalysis(res.data.content);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingAi(false);
+        }
+    };
+
     return (
         <div className="insights-view">
-            <h1 style={{ marginBottom: '1rem' }}>Sustainability Intelligence</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
+            <h1 className="insights-header">Sustainability Intelligence</h1>
+            <p className="text-muted-p">
                 Data-driven recommendations to accelerate your decarbonization journey. Guided by Pareto logic and methodology standards.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* AI Advisor Section */}
+            <div className="card ai-advisor-card">
+                <div className="ai-header">
+                    <div className="ai-title-group">
+                        <div className="ai-icon-box">
+                            <Sparkles size={20} />
+                        </div>
+                        <div>
+                            <h3 className="ai-title">AI Executive Advisor</h3>
+                            <p className="ai-subtitle">Powered by Gemini Enterprise Model</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleGenerateAi}
+                        disabled={loadingAi}
+                        className="btn-primary btn-ai-generate"
+                    >
+                        {loadingAi ? (
+                            <>Thinking...</>
+                        ) : (
+                            <><Cpu size={16} style={{ marginRight: '0.5rem' }} /> Generate Strategic Analysis</>
+                        )}
+                    </button>
+                </div>
+
+                <AnimatePresence>
+                    {aiAnalysis && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            style={{ overflow: 'hidden' }}
+                        >
+                            <div className="ai-content-box">
+                                {aiAnalysis}
+                            </div>
+                            <div className="ai-meta">
+                                <span>Confidence Score: 98.4%</span>
+                                <span>•</span>
+                                <span>Tokens Used: 482</span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            <div className="rec-list">
                 {recommendations.map((rec, i) => (
-                    <div key={i} className="card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                        <div style={{
-                            backgroundColor: rec.impact === 'High' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                            padding: '1rem',
-                            borderRadius: 'var(--radius)',
-                            color: rec.impact === 'High' ? 'var(--primary)' : 'var(--warning)',
-                            border: `1px solid ${rec.impact === 'High' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`
-                        }}>
+                    <div key={i} className="card rec-card">
+                        <div className={`rec-icon-box ${rec.impact === 'High' ? 'rec-high-impact' : 'rec-medium-impact'}`}>
                             <Lightbulb size={24} />
                         </div>
 
                         <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h3 style={{ marginBottom: '0.5rem' }}>{rec.title}</h3>
+                            <div className="rec-header">
+                                <h3 className="rec-title">{rec.title}</h3>
                                 <span className={`status-badge status-${rec.impact.toLowerCase()}`}>{rec.impact} Impact</span>
                             </div>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>{rec.suggestion}</p>
+                            <p className="rec-text">{rec.suggestion}</p>
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button className="btn-primary" style={{
-                                    padding: '0.6rem 1.2rem',
-                                    fontSize: '0.85rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}>
+                            <div className="rec-actions">
+                                <button className="btn-primary btn-sm-icon">
                                     Strategy Brief <ArrowUpRight size={14} />
                                 </button>
-                                <button style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid var(--border)',
-                                    color: 'var(--text-muted)',
-                                    padding: '0.6rem 1.2rem',
-                                    borderRadius: '12px',
-                                    fontSize: '0.85rem',
-                                    cursor: 'pointer'
-                                }}>
+                                <button className="btn-outline">
                                     Acknowledge
                                 </button>
                             </div>
@@ -63,29 +106,18 @@ const Insights = () => {
                 ))}
             </div>
 
-            <div className="card" style={{ marginTop: '3rem', borderLeft: '4px solid var(--primary)', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)' }}>
+            <div className="card roadmap-card">
                 <h3>Decarbonization Roadmap</h3>
-                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '2rem' }}>Priority sequence based on 2024 operational forecasts.</p>
+                <p className="text-muted-p" style={{ marginTop: '0.5rem' }}>Priority sequence based on 2024 operational forecasts.</p>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: '16px', left: '0', right: '0', height: '2px', background: 'var(--border)', zIndex: 0 }}></div>
+                <div className="roadmap-timeline">
+                    <div className="roadmap-line"></div>
                     {['Q1: Baseline', 'Q2: Optimization', 'Q3: Procurement', 'Q4: Verification'].map((step, i) => (
-                        <div key={i} style={{ textAlign: 'center', position: 'relative', flex: 1, zIndex: 1 }}>
-                            <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                backgroundColor: i === 0 ? 'var(--primary)' : 'var(--bg-dark)',
-                                border: '2px solid var(--border)',
-                                margin: '0 auto 0.75rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: i === 0 ? 'white' : 'var(--text-muted)'
-                            }}>
+                        <div key={i} className="roadmap-step">
+                            <div className={`step-circle ${i === 0 ? 'step-active' : 'step-inactive'}`}>
                                 {i === 0 ? <CheckCircle size={16} /> : i + 1}
                             </div>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: i === 0 ? '#fff' : 'var(--text-muted)' }}>{step}</span>
+                            <span className={`step-label ${i === 0 ? 'text-white' : 'text-muted'}`} style={{ color: i === 0 ? '#fff' : 'var(--text-muted)' }}>{step}</span>
                         </div>
                     ))}
                 </div>
